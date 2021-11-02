@@ -6,19 +6,19 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using WebApplication1.Controllers.StoreLayer;
 using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     public class ProductsController : Controller
     {
-        private Example1Entities db = new Example1Entities();
-    
+        private Store store = new StoreDb(new Example1Entities());
 
         // GET: Products
         public ActionResult Index()
         {
-            return View(db.Products.ToList());
+            return View(store.GetAll());
         }
 
         // GET: Products/Details/5
@@ -28,7 +28,7 @@ namespace WebApplication1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            Product product = store.GetById((int)id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -51,8 +51,8 @@ namespace WebApplication1.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Products.Add(product);
-                db.SaveChanges();
+                store.Create(product);
+
                 return RedirectToAction("Index");
             }
 
@@ -66,7 +66,7 @@ namespace WebApplication1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            Product product = store.GetById((int)id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -83,8 +83,7 @@ namespace WebApplication1.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(product).State = EntityState.Modified;
-                db.SaveChanges();
+                store.Update(product);
                 return RedirectToAction("Index");
             }
             return View(product);
@@ -97,7 +96,7 @@ namespace WebApplication1.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+            Product product = store.GetById((int)id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -105,14 +104,18 @@ namespace WebApplication1.Controllers
             return View(product);
         }
 
+        private static int? GetId(int? id)
+        {
+            return id;
+        }
+
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Product product = db.Products.Find(id);
-            db.Products.Remove(product);
-            db.SaveChanges();
+            Product product = store.GetById(id);
+            store.Delete(product);
             return RedirectToAction("Index");
         }
 
@@ -120,7 +123,7 @@ namespace WebApplication1.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                store.Close();
             }
             base.Dispose(disposing);
         }
