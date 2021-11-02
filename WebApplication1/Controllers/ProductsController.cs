@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -13,7 +14,16 @@ namespace WebApplication1.Controllers
 {
     public class ProductsController : Controller
     {
-        private Store store = new StoreDb(new Example1Entities());
+        private Store store;
+
+        public ProductsController() : base()
+        {
+            // To use DB
+            // store = new StoreDb(new Example1Entities());
+
+            // To use JSON (file must be created with empty [])
+            store = new StoreJson(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Products.json"));
+        }
 
         // GET: Products
         public ActionResult Index()
